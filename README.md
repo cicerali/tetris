@@ -35,3 +35,6 @@ cd build\Release
 - `s/up arrow` for rotate clockwise
 - `a` for rotate counterclockwise
 - `esc` for pause/play game
+
+## demo
+[![Demo CountPages alpha](https://j.gifs.com/w0Aoyw.gif)](https://j.gifs.com/w0Aoyw.gif)
