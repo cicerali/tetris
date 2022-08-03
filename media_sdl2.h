@@ -38,6 +38,8 @@ public:
 
     void setNextBlock(unsigned int type) override;
 
+    void clearNextBlock() override;
+
     void gameOver() override;
 
     void playMoveMusic() override;

@@ -31,6 +31,8 @@ public:
 
     virtual void setNextBlock(unsigned int type) = 0;
 
+    virtual void clearNextBlock() = 0;
+
     virtual void gameOver() = 0;
 
     virtual void playMoveMusic() = 0;

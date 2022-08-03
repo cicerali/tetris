@@ -12,7 +12,6 @@
 #include <thread>
 #include "media.h"
 #include "SDL.h"
-#include "SDL_mixer.h"
 #include "SDL_image.h"
 
 class media_sdl2_release : public media {
@@ -38,33 +37,33 @@ public:
 
     void setNextBlock(unsigned int type) override;
 
+    void clearNextBlock() override;
+
     void gameOver() override;
 
-    void playMoveMusic() override;
+    void playMoveMusic() override {};
 
-    void playRotateMusic() override;
+    void playRotateMusic() override {};
 
-    void playLandingMusic() override;
+    void playLandingMusic() override {};
 
-    void playTetrisMusic() override;
+    void playTetrisMusic() override {};
 
-    void playClearingMusic() override;
+    void playClearingMusic() override {};
 
-    void playLevelUpMusic() override;
+    void playLevelUpMusic() override {};
 
-    void playGameOverMusic() override;
+    void playGameOverMusic() override {};
 
-    void playEntryMusic() override;
+    void playEntryMusic() override {};
 
-    void stopMusic() override;
+    void stopMusic() override {};
 
 private:
     bool init();
 
     void setDigitValue(int x, int y, int width, int height, int widthGap, unsigned value,
                        int numberOfDigits) const;
-
-    static void playMusic(Mix_Chunk *chunk, int loops = 0);
 
     SDL_Window *gameWindow{};
     SDL_Surface *gameSurface{};
@@ -80,16 +79,6 @@ private:
     SDL_Surface *blackMino{};
     std::array<SDL_Surface *, 3> minos{};
     SDL_Surface *tetrisDead{};
-
-    /** musics */
-    Mix_Chunk *entryMusic{};
-    Mix_Chunk *rotateMusic{};
-    Mix_Chunk *moveMusic{};
-    Mix_Chunk *landingMusic{};
-    Mix_Chunk *gameOverMusic{};
-    Mix_Chunk *tetrisMusic{};
-    Mix_Chunk *tetrisClearMusic{};
-    Mix_Chunk *tetrisLevelUpMusic{};
 
     /** coordinates and dimensions */
     int linesX = 410;

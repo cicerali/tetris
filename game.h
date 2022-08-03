@@ -127,8 +127,8 @@ private:
     static const int CURRENT_Y_DEFAULT = 3;
     int currentPosX{CURRENT_X_DEFAULT};
     int currentPosY{CURRENT_Y_DEFAULT};
-    const unsigned rows;
-    const unsigned columns;
+    unsigned rows;
+    unsigned columns;
     /** board matrix rows X columns */
     std::vector<std::vector<int>> m;
 };

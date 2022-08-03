@@ -7,7 +7,6 @@
 #include <thread>
 #include "window.h"
 #include "SDL.h"
-#include "SDL_mixer.h"
 
 window &window::getInstance(media *m) {
     static window instance(m);
@@ -19,8 +18,15 @@ window::window(media *m) {
     level = gm.getLevel();
 }
 
-void window::start() {
+void window::reset() {
+    started = false;
+    paused = false;
+    gg = false;
+    gm = {ROWS, COLUMNS};
+    level = gm.getLevel();
+    gm.start();
 
+    md->clearNextBlock();
     md->setLineScore(0);
     for (int i = 0; i < 7; ++i) {
         md->setStatistics(i, 0);
@@ -29,8 +35,12 @@ void window::start() {
     md->setTopScore(0);
     md->setCurrentScore(0);
 
-    md->refreshScreen();
     md->playEntryMusic();
+    drawBoard();
+}
+
+void window::start() {
+    reset();
     eventLoop();
 }
 
@@ -44,6 +54,7 @@ void window::eventLoop() {
     SDL_Event e;
     int tickRes;
     std::vector<int> lines;
+    __begin__:
     while (true) {
         e = {};
         SDL_WaitEventTimeout(&e, 10);
@@ -51,6 +62,12 @@ void window::eventLoop() {
         if (e.type == SDL_QUIT) {
             std::cout << "User typed quit" << std::endl;
             break;
+        }
+
+        if (e.type == SDL_KEYDOWN && e.key.keysym.scancode == SDL_SCANCODE_N) {
+            std::cout << "User typed for new game" << std::endl;
+            reset();
+            goto __begin__;
         }
 
         if (e.type == SDL_KEYDOWN && e.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
@@ -199,4 +216,3 @@ void window::processMerging(std::vector<int> &lines) {
     md->setLevel(gm.getLevel());
     md->refreshScreen();
 }
-

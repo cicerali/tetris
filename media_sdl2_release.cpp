@@ -14,14 +14,8 @@ media_sdl2_release::media_sdl2_release() {
 bool media_sdl2_release::init() {
 
     // Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cout << "SDL could not initialize! SDL_Error: " << GetError() << std::endl;
-        return false;
-    }
-
-    // Initialize SDL_mixer
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << GetError() << std::endl;
         return false;
     }
 
@@ -41,55 +35,7 @@ bool media_sdl2_release::init() {
         return false;
     }
 
-    SDL_RWops *rw = SDL_RWFromMem(tetris_gameboy_02_wav, tetris_gameboy_02_wav_len);
-    if ((entryMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load entry music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(tetrisTurn_wav, tetrisTurn_wav_len);
-    if ((rotateMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load rotate music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(tetrisMove_wav, tetrisMove_wav_len);
-    if ((moveMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load move music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(tetrisLand_wav, tetrisLand_wav_len);
-    if ((landingMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load land music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(tetrisGameOver_wav, tetrisGameOver_wav_len);
-    if ((gameOverMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load game over music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(tetris_wav, tetris_wav_len);
-    if ((tetrisMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load tetris music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(tetrisClear_wav, tetrisClear_wav_len);
-    if ((tetrisClearMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load tetris clearLines music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(tetrisLevelUp_wav, tetrisLevelUp_wav_len);
-    if ((tetrisLevelUpMusic = Mix_LoadWAV_RW(rw, 1)) == nullptr) {
-        std::cout << "Failed to load level up music! SDL_mixer Error: " << Mix_GetError() << std::endl;
-        return false;
-    }
-
-    rw = SDL_RWFromMem(background_png, background_png_len);
+    SDL_RWops *rw = SDL_RWFromMem(background_png, background_png_len);
     if ((backgroundSurface = IMG_Load_RW(rw, 1)) == nullptr) {
         std::cout << "Failed to load backgroundImage image!" << GetError() << std::endl;
         return false;
@@ -273,6 +219,11 @@ void media_sdl2_release::setNextBlock(unsigned int type) {
     }
 }
 
+void media_sdl2_release::clearNextBlock() {
+    SDL_Rect rect = {nextBeginX, nextBeginY, minoLength * 4, minoLength * 4};
+    SDL_BlitScaled(blackMino, nullptr, gameSurface, &rect);
+}
+
 void media_sdl2_release::gameOver() {
     using namespace std::chrono_literals;
     playGameOverMusic();
@@ -283,42 +234,6 @@ void media_sdl2_release::gameOver() {
         std::this_thread::sleep_for(50ms);
         SDL_UpdateWindowSurface(gameWindow);
     }
-}
-
-void media_sdl2_release::playMoveMusic() {
-    playMusic(moveMusic);
-}
-
-void media_sdl2_release::playRotateMusic() {
-    playMusic(rotateMusic);
-}
-
-void media_sdl2_release::playLandingMusic() {
-    playMusic(landingMusic);
-}
-
-void media_sdl2_release::playTetrisMusic() {
-    playMusic(tetrisMusic);
-}
-
-void media_sdl2_release::playClearingMusic() {
-    playMusic(tetrisClearMusic);
-}
-
-void media_sdl2_release::playLevelUpMusic() {
-    playMusic(tetrisLevelUpMusic);
-}
-
-void media_sdl2_release::playGameOverMusic() {
-    playMusic(gameOverMusic);
-}
-
-void media_sdl2_release::playEntryMusic() {
-    playMusic(entryMusic, -1);
-}
-
-void media_sdl2_release::stopMusic() {
-    Mix_HaltChannel(-1);
 }
 
 void media_sdl2_release::setDigitValue(int x, int y, int width, int height, int widthGap, unsigned int value,
@@ -332,8 +247,4 @@ void media_sdl2_release::setDigitValue(int x, int y, int width, int height, int 
         SDL_Rect rect = {x + (widthGap * i), y, width, height};
         SDL_BlitScaled(digits[dts[i] - 48], nullptr, gameSurface, &rect);
     }
-}
-
-void media_sdl2_release::playMusic(Mix_Chunk *chunk, int loops) {
-    Mix_PlayChannel(-1, chunk, loops);
 }

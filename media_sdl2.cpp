@@ -246,6 +246,11 @@ void media_sdl2::setNextBlock(unsigned int type) {
     }
 }
 
+void media_sdl2::clearNextBlock() {
+    SDL_Rect rect = {nextBeginX, nextBeginY, minoLength * 4, minoLength * 4};
+    SDL_BlitScaled(blackMino, nullptr, gameSurface, &rect);
+}
+
 void media_sdl2::gameOver() {
     using namespace std::chrono_literals;
     playGameOverMusic();

@@ -8,7 +8,6 @@
 #include <array>
 #include "SDL_surface.h"
 #include "SDL_video.h"
-#include "SDL_mixer.h"
 #include "blocks.h"
 #include "game.h"
 #include "media.h"
@@ -18,12 +17,16 @@ public:
     static window &getInstance(media *m);
 
     void start();
+
     void drawBoard() const;
+
+    void reset();
 
 private:
     explicit window(media *m);
 
     void processMerging(std::vector<int> &lines);
+
     void eventLoop();
 
     std::unique_ptr<media> md;
