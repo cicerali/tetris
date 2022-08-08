@@ -11,6 +11,7 @@
 #include "blocks.h"
 #include "game.h"
 #include "media.h"
+#include "rest_service.h"
 
 class window {
 public:
@@ -19,6 +20,8 @@ public:
     void start();
 
     void drawBoard() const;
+
+    void sendStatus();
 
     void reset();
 
@@ -37,6 +40,8 @@ private:
     bool paused = false;
     bool gg = false;
     unsigned level;
+
+    rest_service rs;
 };
 
 #endif //TETRIS_WINDOW_H

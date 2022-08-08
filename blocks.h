@@ -20,6 +20,9 @@ enum class block_type : unsigned {
     i
 };
 
+static const char *block_str[] =
+        {"t", "j", "z", "o", "s", "l", "i"};
+
 enum class rotation : unsigned {
     rotation_down,
     rotation_left,

@@ -101,7 +101,7 @@ ADD rc.xml /etc/xdg/openbox/rc.xml
 # 6080
 #   noVNC port
 #===============
-EXPOSE 6080
+EXPOSE 6080 8080
 
 #===================
 # Run docker-appium

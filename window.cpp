@@ -37,10 +37,12 @@ void window::reset() {
 
     md->playEntryMusic();
     drawBoard();
+    sendStatus();
 }
 
 void window::start() {
     reset();
+    rs.start();
     eventLoop();
 }
 
@@ -53,6 +55,7 @@ void window::eventLoop() {
     std::chrono::duration<double> diff{};
     SDL_Event e;
     int tickRes;
+    bool send_gg = true;
     std::vector<int> lines;
     __begin__:
     while (true) {
@@ -64,17 +67,23 @@ void window::eventLoop() {
             break;
         }
 
-        if (e.type == SDL_KEYDOWN && e.key.keysym.scancode == SDL_SCANCODE_N) {
+        if ((e.type == SDL_KEYDOWN || e.type == rs.ev.commandEvent) && e.key.keysym.scancode == SDL_SCANCODE_N) {
             std::cout << "User typed for new game" << std::endl;
             reset();
+            send_gg = true;
             goto __begin__;
         }
 
-        if (e.type == SDL_KEYDOWN && e.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+        if ((e.type == SDL_KEYDOWN || e.type == rs.ev.commandEvent) && e.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
             paused = !paused;
+            sendStatus();
             continue;
         }
         if (paused || gg) {
+            if (gg && send_gg) {
+                send_gg = false;
+                sendStatus();
+            }
             continue;
         }
         if (started) {
@@ -89,12 +98,13 @@ void window::eventLoop() {
                     processMerging(lines);
                 } else { /** block moved down one square */
                     drawBoard();
+                    sendStatus();
                 }
                 begin = end;
                 tick = gm.getSpeed();
             }
         }
-        if (e.type == SDL_KEYDOWN) {
+        if (e.type == SDL_KEYDOWN || e.type == rs.ev.commandEvent) {
             if (started && !gg) {
                 switch (e.key.keysym.scancode) {
                     case SDL_SCANCODE_A: /** rotate the block counterclockwise */
@@ -125,6 +135,7 @@ void window::eventLoop() {
                         break;
                 }
                 drawBoard();
+                sendStatus();
             } else if (e.key.keysym.scancode == SDL_SCANCODE_SPACE && !started) { /** begin the game */
                 started = true;
                 md->stopMusic();
@@ -133,12 +144,72 @@ void window::eventLoop() {
                 md->setStatistics(static_cast<int>(gm.getBrd().getCurrent()->type),
                                   gm.getStat(gm.getBrd().getCurrent()->type));
                 drawBoard();
+                sendStatus();
                 md->refreshScreen();
             }
         }
     }
 
     exit(0);
+}
+
+void window::sendStatus() {
+    using nlohmann::json;
+    auto data = json::object();
+    auto rows = json::array();
+    for (int i = 0; i < ROWS; ++i) {
+        auto column = json::array();
+        for (int j = 0; j < COLUMNS; ++j) {
+            if (gm.getBrd().getValue(i, j) >= 0) {
+                column[j] = 1;
+            } else {
+                column[j] = 0;
+            }
+        }
+        rows[i] = column;
+    }
+    data["started"] = started;
+    data["game-over"] = gg;
+    data["paused"] = paused;
+    data["level"] = gm.getLevel();
+    data["score"] = gm.getScore();
+    auto statistics = json::array();
+    statistics[0] = gm.getStat(block_type::t);
+    statistics[1] = gm.getStat(block_type::j);
+    statistics[2] = gm.getStat(block_type::z);
+    statistics[3] = gm.getStat(block_type::o);
+    statistics[4] = gm.getStat(block_type::s);
+    statistics[5] = gm.getStat(block_type::l);
+    statistics[6] = gm.getStat(block_type::i);
+    data["statistics"] = statistics;
+    data["next"] = block_str[static_cast<int>(gm.getBrd().getNext()->type)];
+    auto cur = json::object();;
+
+    cur["type"] = block_str[static_cast<int>(gm.getBrd().getCurrent()->type)];
+
+    auto cur_block = gm.getBrd().getCurrent();
+    int currentX = gm.getBrd().getCurrentPosX();
+    int currentY = gm.getBrd().getCurrentPosY();
+    int xPos;
+    int yPos;
+    auto cur_rows = json::array();
+    int k = 0;
+    for (int i = 0; i < cur_block->height; ++i) {
+        for (int j = 0; j < cur_block->width; ++j) {
+            if (cur_block->getValue(i, j)) {
+                auto column = json::array();
+                xPos = currentX + i;
+                yPos = currentY + j;
+                column = {yPos, xPos};
+                cur_rows[k++] = column;
+            }
+        }
+    }
+
+    cur["tiles"] = cur_rows;
+    data["current"] = cur;
+    data["board"] = rows;
+    rs.ev.send_event(data.dump());
 }
 
 void window::drawBoard() const {
@@ -180,8 +251,6 @@ void window::processMerging(std::vector<int> &lines) {
     using namespace std::chrono_literals;
 
     if (!lines.empty()) { /** MERGE or TETRIS */
-        auto first = lines.front();
-        auto last = lines.back();
         auto middle = COLUMNS / 2;
         int k = middle - 1;
         int z = middle;

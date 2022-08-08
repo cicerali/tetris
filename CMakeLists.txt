@@ -52,12 +52,29 @@ FetchContent_Declare(
         GIT_TAG ab8301a2c7e201d833808ca9ac132aac8150f870
         GIT_PROGRESS    TRUE
 )
-FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer)
+
+# cpp-httplib
+FetchContent_Declare(
+        cpp-httplib
+        GIT_REPOSITORY  https://github.com/yhirose/cpp-httplib
+        GIT_TAG d92c31446687cfa336a6332b1015b4fe289fbdec
+        GIT_PROGRESS    TRUE
+)
+
+# json
+FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY  https://github.com/nlohmann/json
+        GIT_TAG 69d744867f8847c91a126fa25e9a6a3d67b3be41
+        GIT_PROGRESS    TRUE
+)
+
+FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer cpp-httplib nlohmann_json )
 
 set(SDL2_LIBRARIES ${SDL2_LIBRARIES} SDL2 SDL2main SDL2_image SDL2_mixer)
 
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-add_executable(tetris WIN32 main.cpp blocks.cpp window.cpp game.cpp media_sdl2.cpp media_sdl2_release.cpp)
-target_link_libraries(tetris ${SDL2_LIBRARIES})
+add_executable(tetris WIN32 main.cpp blocks.cpp window.cpp game.cpp media_sdl2.cpp media_sdl2_release.cpp rest_service.cpp rest_service.h)
+target_link_libraries(tetris ${SDL2_LIBRARIES} httplib nlohmann_json )
